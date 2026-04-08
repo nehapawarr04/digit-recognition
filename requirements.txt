@@ -1,7 +1,6 @@
-flask
+Flask
 numpy
+Pillow
 scikit-learn
-opencv-python-headless
 joblib
-pillow
 gunicorn
