@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuralDraw — Digit Recognizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Animated background orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">NeuralDraw</span>
+    </div>
+    <nav class="badge-row">
+      <span class="badge">Decision Tree</span>
+      <span class="badge">MNIST</span>
+      <span class="badge">Python · Flask</span>
+    </nav>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- Hero -->
+    <section class="hero">
+      <p class="hero-label">AI-Powered Recognition</p>
+      <h1 class="hero-title">
+        What digit<br />
+        did you draw?
+      </h1>
+      <p class="hero-sub">
+        Upload a handwritten digit image and let the trained
+        model identify it in milliseconds.
+      </p>
+    </section>
+
+    <!-- Card grid -->
+    <div class="card-grid">
+
+      <!-- ── Upload Card ── -->
+      <div class="card upload-card">
+        <div class="card-label">01 — Upload</div>
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0"
+             aria-label="Drag and drop image or click to browse">
+          <div class="drop-icon" id="dropIcon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+              <path d="M24 30V18M24 18L19 23M24 18L29 23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="drop-title" id="dropTitle">Drop your image here</p>
+          <p class="drop-sub">PNG, JPG, WEBP · Max 5 MB</p>
+          <button class="btn-browse" id="browseBtn" type="button">Browse Files</button>
+          <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp"
+                 aria-label="File input" hidden />
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-wrap" id="previewWrap" hidden>
+          <img id="preview" class="preview-img" alt="Uploaded digit preview" />
+          <button class="btn-clear" id="clearBtn" type="button" aria-label="Remove image">✕ Remove</button>
+        </div>
+
+        <!-- Predict button -->
+        <button class="btn-predict" id="predictBtn" type="button" disabled>
+          <span class="btn-text">Analyze Digit</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- ── Result Card ── -->
+      <div class="card result-card" id="resultCard">
+        <div class="card-label">02 — Result</div>
+
+        <!-- Idle state -->
+        <div class="result-idle" id="resultIdle">
+          <div class="idle-grid" aria-hidden="true">
+            <span>0</span><span>1</span><span>2</span>
+            <span>3</span><span>?</span><span>5</span>
+            <span>6</span><span>7</span><span>8</span>
+          </div>
+          <p class="idle-hint">Upload an image to see the prediction</p>
+        </div>
+
+        <!-- Loading state -->
+        <div class="result-loading" id="resultLoading" hidden>
+          <div class="loader-ring">
+            <div></div><div></div><div></div><div></div>
+          </div>
+          <p class="loading-text">Analyzing pixel patterns…</p>
+        </div>
+
+        <!-- Success state -->
+        <div class="result-success" id="resultSuccess" hidden>
+          <p class="result-label-sm">Detected digit</p>
+          <div class="digit-display" id="digitDisplay">—</div>
+          <div class="confidence-bar-wrap" id="confWrap" hidden>
+            <div class="conf-header">
+              <span>Confidence</span>
+              <span id="confValue">—</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" id="confFill"></div>
+            </div>
+          </div>
+          <button class="btn-retry" id="retryBtn" type="button">Try another →</button>
+        </div>
+
+        <!-- Error state -->
+        <div class="result-error" id="resultError" hidden>
+          <div class="error-icon">⚠</div>
+          <p class="error-msg" id="errorMsg">Something went wrong.</p>
+          <button class="btn-retry" id="retryBtn2" type="button">Try again →</button>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+
+    <!-- How it works -->
+    <section class="how-it-works">
+      <h2 class="section-title">How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Upload</h3>
+          <p>Provide a PNG/JPG image of a handwritten digit (0–9).</p>
+        </div>
+        <div class="step-connector" aria-hidden="true">→</div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Preprocess</h3>
+          <p>Image is grayscaled, resized to 28×28, inverted, normalized & thresholded.</p>
+        </div>
+        <div class="step-connector" aria-hidden="true">→</div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Predict</h3>
+          <p>The Decision Tree model trained on 60,000 MNIST samples classifies the digit.</p>
+        </div>
+        <div class="step-connector" aria-hidden="true">→</div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h3>Result</h3>
+          <p>Predicted digit is returned with confidence score instantly.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <p>Built with <span class="accent">Flask · scikit-learn · Pillow</span> · MNIST Dataset</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
